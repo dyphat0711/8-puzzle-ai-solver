@@ -1,3 +1,4 @@
+# app.py
 import streamlit as st
 import time
 import pandas as pd
@@ -9,11 +10,11 @@ from utils import generate_random_state
 from search import BreadthFirstSearch, AStarSearch
 from heuristics import HammingHeuristic, ChebyshevSumHeuristic
 from visualization import render_tree_graphviz
+from experiment import run_comparison_experiments
 
 st.set_page_config(page_title="8-Puzzle Solver", page_icon="🧩", layout="wide")
 st.title("🧩 8-Puzzle")
 
-# Hàm vẽ bảng bằng HTML/CSS để minh hoạ trực quan
 def draw_board(state):
     b = state.board
     html = "<table style='margin:auto; font-size:24px; text-align:center; border-collapse: separate; border-spacing: 5px;'>"
@@ -30,15 +31,13 @@ def draw_board(state):
     html += "</table><br>"
     return html
 
-# Tạo 2 Tab riêng biệt
 tab1, tab2 = st.tabs(["👁️ Minh hoạ từng bước", "🧪 Thực nghiệm & Lịch sử"])
 
 # ==========================================
-# TAB 1: MINH HOẠ TỪNG BƯỚC ĐI CỦA 1 BÀI TOÁN
+# TAB 1: MINH HOẠ TỪNG BƯỚC ĐI CỦA 1 BÀI TOÁN (Giữ nguyên)
 # ==========================================
 with tab1:
     st.markdown("### Xem cách thuật toán di chuyển các ô số để đạt trạng thái đích")
-    
     if 'single_state' not in st.session_state:
         st.session_state.single_state = generate_random_state(steps=15)
         
@@ -47,7 +46,6 @@ with tab1:
     with col_setup:
         st.markdown("**1. Trạng thái ban đầu**")
         st.write(draw_board(st.session_state.single_state), unsafe_allow_html=True)
-        
         diff = st.slider("Độ khó (Bước xáo trộn):", 5, 30, 15, key="single_diff")
         if st.button("🎲 Tạo bài toán mới", use_container_width=True):
             st.session_state.single_state = generate_random_state(steps=diff)
@@ -77,7 +75,6 @@ with tab1:
                 st.success(f"🎉 Đã tìm thấy lời giải ({result.cost} bước) trong {elapsed:.4f} giây!")
                 st.markdown("### 🗺️ Chi tiết các bước di chuyển")
                 
-                # --- TÍCH HỢP VẼ CÂY TÌM KIẾM ---
                 st.markdown("### 🌳 Sơ đồ cây tìm kiếm (Top 15 Node mở rộng)")
                 dot_graph = render_tree_graphviz(solver.expanded_nodes, n=15, return_dot=True)
                 if dot_graph:
@@ -85,9 +82,7 @@ with tab1:
                 else:
                     st.warning("Vui lòng cài đặt thư viện 'graphviz' (`pip install graphviz`) để xem sơ đồ cây trực quan.")
                 st.divider()
-                # ---------------------------------
                 
-                # In các bước đi theo dạng lưới (4 bước 1 hàng)
                 steps_per_row = 4
                 for i in range(0, len(result.path), steps_per_row):
                     cols = st.columns(steps_per_row)
@@ -102,9 +97,8 @@ with tab1:
             else:
                 st.error("Không tìm thấy lời giải.")
 
-
 # ==========================================
-# TAB 2: THỰC NGHIỆM VÀ LỊCH SỬ (Chạy nhiều Trial)
+# TAB 2: THỰC NGHIỆM VÀ LỊCH SỬ (Sử dụng experiment.py)
 # ==========================================
 with tab2:
     if 'history_df' not in st.session_state:
@@ -120,42 +114,25 @@ with tab2:
             st.rerun()
 
     if run_exp_btn:
-        configs = [
-            ("A* (Chebyshev/2)", AStarSearch(ChebyshevSumHeuristic())),
-            ("A* (Hamming/2)", AStarSearch(HammingHeuristic())),
-            ("BFS", BreadthFirstSearch())
-        ]
-        
         run_time = datetime.now().strftime("%H:%M:%S")
-        new_results = []
         progress_bar = st.progress(0)
         status_text = st.empty()
         
-        for trial in range(1, num_trials + 1):
-            status_text.text(f"Đang xử lý bài toán {trial} / {num_trials}...")
-            initial_state = generate_random_state(steps=shuffle_steps)
-            problem = EightPuzzle(initial_state)
+        # Callback để cập nhật thanh tiến trình từ bên trong hàm experiment
+        def update_ui(current_trial, total_trials):
+            status_text.text(f"Đang xử lý bài toán {current_trial} / {total_trials}...")
+            progress_bar.progress(current_trial / total_trials)
             
-            for name, solver in configs:
-                t0 = time.perf_counter()
-                res = solver.search(problem)
-                elapsed = time.perf_counter() - t0
-                
-                if res:
-                    new_results.append({
-                        "Đợt chạy": run_time,
-                        "Trial": trial,
-                        "Thuật toán": name,
-                        "Cost": res.cost,
-                        "Nodes Explored": res.nodes_expanded,
-                        "Max Frontier": res.max_frontier_size,
-                        "Thời gian (s)": round(elapsed, 4)
-                    })
-            progress_bar.progress(trial / num_trials)
+        # Gọi hàm chung từ experiment.py thay vì tự viết vòng lặp
+        results_list = run_comparison_experiments(num_trials, shuffle_steps, update_ui)
+        
+        # Thêm cột "Đợt chạy" vào kết quả trả về
+        for r in results_list:
+            r["Đợt chạy"] = run_time
             
         status_text.success(f"✅ Đã hoàn thành đợt chạy lúc {run_time}!")
         
-        new_df = pd.DataFrame(new_results)
+        new_df = pd.DataFrame(results_list)
         if st.session_state.history_df.empty:
             st.session_state.history_df = new_df
         else:

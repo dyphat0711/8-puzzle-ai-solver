@@ -1,3 +1,4 @@
+# heuristics.py
 import math
 from problem import EightPuzzle
 

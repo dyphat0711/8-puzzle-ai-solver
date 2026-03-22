@@ -1,3 +1,4 @@
+# problem.py
 class SearchProblem:
     """Domain-independent interface for a state-space search problem.
 

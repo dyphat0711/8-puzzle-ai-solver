@@ -1,7 +1,4 @@
-"""Search-tree visualisation (text-based and optional Graphviz)."""
-
-# ── Text-based tree printer (Dùng cho Terminal) ──────────────────────────────
-
+# visualization.py
 def _fmt_board(state):
     """Compact one-line board string, e.g. |1 2 3|4 _ 5|7 8 6|."""
     b = state.board
@@ -51,8 +48,6 @@ def visualize_tree(expanded_nodes, n=15):
     for root_idx in roots:
         _print(root_idx)
 
-
-# ── Optional Graphviz renderer (Dùng cho Streamlit hoặc xuất ảnh) ────────────
 
 def render_tree_graphviz(expanded_nodes, n=15, filename="search_tree", view=False, return_dot=False):
     """Render the first *n* expanded nodes via Graphviz."""
