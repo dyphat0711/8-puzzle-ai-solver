@@ -1,31 +1,49 @@
 # experiment.py
 import time
-from problem import EightPuzzle
-from utils import generate_random_state
-from search import BreadthFirstSearch, AStarSearch
-from heuristics import HammingHeuristic, ChebyshevSumHeuristic
-from visualization import visualize_tree
-
+from src import (
+    EightPuzzle,
+    generate_random_state,
+    BreadthFirstSearch,
+    AStarSearch,
+    HammingHeuristic,
+    ChebyshevSumHeuristic,
+    visualize_tree
+)
+    
 def run_demo():
     print("=" * 60)
-    print("  🧩 TRÌNH GIẢI MODIFIED 8-PUZZLE (DEMO)")
+    print("TRÌNH GIẢI 8-PUZZLE")
     print("=" * 60)
 
     initial_state = generate_random_state(steps=15)
     problem = EightPuzzle(initial_state)
     
     print(f"\n[Trạng thái bắt đầu]\n{initial_state}")
-
-    print("\n🚀 Đang tìm đường đi bằng A* (Chebyshev/2)...")
-    solver = AStarSearch(ChebyshevSumHeuristic())
+    print(f"\nChọn heuristic: BFS or (Chebyshev/2) or (Hamming/2)")
+    print("1. BFS\n2. A* (Chebyshev/2)\n3. A* (Hamming/2)")
+    choice = int(input("Nhập lựa chọn : "))
     
+    if choice == 1:
+        print("\nĐang tìm đường đi bằng BFS...")
+        solver = BreadthFirstSearch()
+    elif choice == 2:
+        print("\nĐang tìm đường đi bằng A* (Chebyshev/2)...")
+        solver = AStarSearch(ChebyshevSumHeuristic())
+    elif choice == 3:
+        print("\nĐang tìm đường đi bằng A* (Hamming/2)...")
+        solver = AStarSearch(HammingHeuristic())
+    else:
+        print("Lựa chọn không hợp lệ. Sử dụng A* (Chebyshev/2) mặc định.")
+        solver = AStarSearch(ChebyshevSumHeuristic())
+        
+
     t0 = time.perf_counter()
     result = solver.search(problem)
     elapsed = time.perf_counter() - t0
 
     if result:
-        print(f"✅ Đã giải xong trong {elapsed:.4f} giây!")
-        print(f"📊 Cost: {result.cost} | Số Node mở rộng: {result.nodes_expanded} | Max Frontier: {result.max_frontier_size}")
+        print(f"Đã giải xong trong {elapsed:.4f} giây!")
+        print(f"Cost: {result.cost} | Nodes Expanded: {result.nodes_expanded} | Max Frontier: {result.max_frontier_size}")
         
         print(f"\n[Đường đi chi tiết - {len(result.actions)} bước]")
         for i, state in enumerate(result.path):
@@ -35,29 +53,28 @@ def run_demo():
                 print(f"  {line}")
 
         print("\n" + "=" * 60)
-        print("  🌳 CÂY TÌM KIẾM (Top 15 Node đầu tiên)")
+        print("CÂY TÌM KIẾM (15 Node đầu tiên)")
         print("=" * 60)
         visualize_tree(solver.expanded_nodes, n=15)
     else:
-        print("\n❌ Không tìm thấy đường đi.")
+        print("\nKhông tìm thấy đường đi.")
 
 def run_experiments(num_trials=5, shuffle_steps=15):
     print("\n\n" + "=" * 70)
-    print(f"  🧪 CHẠY THỰC NGHIỆM ({num_trials} Trials, Độ khó {shuffle_steps})")
+    print(f"CHẠY THỰC NGHIỆM ({num_trials} Trials, Độ khó {shuffle_steps})")
     print("=" * 70)
 
     header = f"{'Trial':>5} | {'Thuật toán':>16} | {'Cost':>5} | {'Expanded':>8} | {'Frontier':>8} | {'Time(s)':>8}"
     print(header)
     print("-" * len(header))
 
-    # Lấy danh sách kết quả từ experiment.py (không cần callback trên terminal)
     results = run_comparison_experiments(num_trials, shuffle_steps)
 
     for res in results:
         trial = res["Trial"]
         name = res["Thuật toán"]
         cost = res["Cost"]
-        exp = res["Nodes Explored"]
+        exp = res["Nodes Expanded"]
         front = res["Max Frontier"]
         time_s = res["Thời gian (s)"]
         
@@ -81,7 +98,6 @@ def run_comparison_experiments(num_trials=5, shuffle_steps=15, progress_callback
     results = []
     
     for trial in range(1, num_trials + 1):
-        # Sinh chung 1 bài toán cho cả 3 thuật toán so sánh trong cùng 1 trial
         initial_state = generate_random_state(steps=shuffle_steps)
         problem = EightPuzzle(initial_state)
         
@@ -94,7 +110,7 @@ def run_comparison_experiments(num_trials=5, shuffle_steps=15, progress_callback
                 "Trial": trial,
                 "Thuật toán": name,
                 "Cost": res.cost if res else None,
-                "Nodes Explored": res.nodes_expanded if res else None,
+                "Nodes Expanded": res.nodes_expanded if res else None,
                 "Max Frontier": res.max_frontier_size if res else None,
                 "Thời gian (s)": round(elapsed, 4)
             }

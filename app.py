@@ -5,11 +5,11 @@ import pandas as pd
 from datetime import datetime
 
 # Import logic từ file modules 
-from problem import EightPuzzle
-from utils import generate_random_state
-from search import BreadthFirstSearch, AStarSearch
-from heuristics import HammingHeuristic, ChebyshevSumHeuristic
-from visualization import render_tree_graphviz
+from src.problem import EightPuzzle
+from src.utils import generate_random_state
+from src.search import BreadthFirstSearch, AStarSearch
+from src.heuristics import HammingHeuristic, ChebyshevSumHeuristic
+from src.visualization import render_tree_graphviz
 from experiment import run_comparison_experiments
 
 st.set_page_config(page_title="8-Puzzle Solver", page_icon="🧩", layout="wide")
@@ -34,7 +34,7 @@ def draw_board(state):
 tab1, tab2 = st.tabs(["👁️ Minh hoạ từng bước", "🧪 Thực nghiệm & Lịch sử"])
 
 # ==========================================
-# TAB 1: MINH HOẠ TỪNG BƯỚC ĐI CỦA 1 BÀI TOÁN (Giữ nguyên)
+# TAB 1: MINH HOẠ TỪNG BƯỚC ĐI CỦA 1 BÀI TOÁN
 # ==========================================
 with tab1:
     st.markdown("### Xem cách thuật toán di chuyển các ô số để đạt trạng thái đích")
@@ -97,9 +97,9 @@ with tab1:
             else:
                 st.error("Không tìm thấy lời giải.")
 
-# ==========================================
-# TAB 2: THỰC NGHIỆM VÀ LỊCH SỬ (Sử dụng experiment.py)
-# ==========================================
+# ================================
+# TAB 2: THỰC NGHIỆM VÀ LỊCH SỬ 
+# ================================
 with tab2:
     if 'history_df' not in st.session_state:
         st.session_state.history_df = pd.DataFrame()
@@ -145,7 +145,7 @@ with tab2:
         
         st.subheader("📊 Bảng Tổng kết (Trung bình)")
         summary_df = df.groupby("Thuật toán").agg({
-            "Cost": "mean", "Nodes Explored": "mean",
+            "Cost": "mean", "Nodes Expanded": "mean",
             "Max Frontier": "mean", "Thời gian (s)": "mean"
         }).reset_index()
         st.table(summary_df)
@@ -154,7 +154,7 @@ with tab2:
         chart_df = summary_df.set_index("Thuật toán")
         c1, c2, c3 = st.columns(3)
         with c1: st.bar_chart(chart_df["Thời gian (s)"], color="#FF5722") 
-        with c2: st.bar_chart(chart_df["Nodes Explored"], color="#4CAF50") 
+        with c2: st.bar_chart(chart_df["Nodes Expanded"], color="#4CAF50") 
         with c3: st.bar_chart(chart_df["Max Frontier"], color="#2196F3")
     else:
         st.info("Chưa có dữ liệu thực nghiệm. Bấm 'Chạy đợt thực nghiệm mới' ở sidebar để bắt đầu.")

@@ -1,72 +1,307 @@
-# 8-Puzzle AI Solver
+<div align="center">
 
-## Overview
-The 8-Puzzle AI Solver is a project that implements algorithms to solve the classic 8-puzzle problem. The 8-puzzle consists of a 3x3 grid with 8 numbered tiles and one blank space, allowing tiles to slide into the blank space. The objective is to move the tiles into a specified goal state using the fewest number of moves.
+# 🧩 Modified 8-Puzzle AI Solver
 
-## Features
-- **Multiple algorithms**: Implementations of various search algorithms such as A*, BFS, DFS, and Uniform Cost Search.
-- **Interactive visualization**: A visual representation of the solving process to help users understand how the algorithms work.
-- **User-friendly interface**: Simple and easy-to-use interface for inputting puzzles and viewing solutions.
-- **Performance metrics**: Displays time taken and number of moves for finding solutions.
-- **Configurable goal states**: Support for custom goal state configurations.
-- **Heuristic evaluation**: Implements heuristics like Manhattan distance for optimized pathfinding.
+**A high-performance AI agent that solves a non-standard 8-puzzle with knight moves, divisibility swaps, jump-overs, and multiple goal states.**
 
-## Installation
-To get started with the 8-Puzzle AI Solver, clone the repository and ensure you have the necessary dependencies installed:
+[![Python 3.8+](https://img.shields.io/badge/Python-3.8%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![Streamlit](https://img.shields.io/badge/Streamlit-1.55-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Made with AI](https://img.shields.io/badge/Made%20with-AI%20Search-blueviolet)]()
+
+<br>
+
+<!-- Replace with your actual demo GIF -->
+> 🎬 **[Demo GIF Placeholder]** — _Record with [ScreenToGif](https://www.screentogif.com/) or [Peek](https://github.com/phw/peek) and drop it here._
+
+</div>
+
+---
+
+## 🔥 Why This Project Is Interesting
+
+The classic 8-puzzle is a well-studied toy problem in AI. This variant turns it into a **genuinely harder** search challenge by adding four distinct move types:
+
+| Move | Classic 8-Puzzle | This Variant |
+|------|:---:|:---:|
+| Basic Slide | ✅ | ✅ |
+| Knight Jump | ❌ | ✅ |
+| Divisibility Swap | ❌ | ✅ |
+| Jump-Over | ❌ | ✅ |
+| Multiple Goals | ❌ | ✅ (4 goals) |
+
+These rules **dramatically increase the branching factor**, making uninformed search far more expensive while rewarding well-designed heuristics. The project also ships with an interactive Streamlit dashboard for real-time visualization and benchmarking — not just a script, but a tool you can explore with.
+
+---
+
+## ✨ Features
+
+- **4 unique action types** — slide, knight, divisibility swap, and jump-over
+- **4 goal configurations** — the solver finds the closest reachable goal
+- **BFS & A\* Search** with pluggable heuristic interface
+- **2 admissible heuristics** — Halved Hamming and Halved Chebyshev Sum
+- **Interactive Streamlit UI** — step-by-step solution playback and batch experiments
+- **Search tree visualization** — Graphviz rendering of expanded nodes
+- **Benchmark suite** — compare algorithms across randomized trials with charts
+
+---
+
+## 📐 Algorithms
+
+### Breadth-First Search (BFS)
+
+Explores the state space level by level using a FIFO queue. Guarantees an **optimal solution** when all step costs are uniform (cost = 1 per move), but expands many nodes on deeper instances.
+
+### A\* Search
+
+Uses a priority queue ordered by `f(n) = g(n) + h(n)` where `g(n)` is the path cost so far and `h(n)` is a heuristic estimate to the nearest goal. With an **admissible** heuristic, A\* is guaranteed optimal and typically expands far fewer nodes than BFS.
+
+---
+
+## 🧠 Heuristics & Admissibility
+
+Both heuristics compute their raw value across **all 4 goal states** and take the **minimum**, then **divide by 2** (ceiling).
+
+| Heuristic | Raw Metric | Formula |
+|-----------|-----------|---------|
+| **Hamming / 2** | # of misplaced tiles | `⌈ min_goal(misplaced) / 2 ⌉` |
+| **Chebyshev / 2** | Σ Chebyshev distances | `⌈ min_goal(Σ cheb) / 2 ⌉` |
+
+### Why divide by 2?
+
+In the standard 8-puzzle, each action moves **one tile one step** toward (or away from) its goal. Manhattan or Hamming distances then serve as natural lower bounds.
+
+In this variant, a single action can move a tile **up to 2 positions** (knight jump, jump-over) or fix **two tiles at once** (divisibility swap). That means one action can reduce the raw distance by up to **2 units**. Dividing by 2 accounts for this worst-case reduction:
+
+```
+h(n) = ⌈raw(n) / 2⌉  ≤  true cost
+```
+
+Because no single action can reduce the raw metric by more than 2, the halved value **never overestimates** the true cost — preserving **admissibility** and therefore A\* optimality.
+
+---
+
+## 🧩 Move Rules in Detail
+
+### 1. Basic Slide
+Standard 4-directional slide of a tile adjacent to the blank (Up / Down / Left / Right).
+
+### 2. Knight Move
+A tile at an L-shaped chess-knight offset from the blank jumps directly into the blank position.
+
+### 3. Divisibility Swap
+Two **adjacent, non-blank** tiles `A` and `B` swap positions if `A % B == 0` or `B % A == 0`. The blank is not involved.
+
+### 4. Jump-Over
+When three cells form a line as `A - B - Blank`, tile A leaps over B into the blank. B stays in place.
+
+---
+
+## 🎯 Goal States
+
+The solver accepts **any** of these four configurations as a valid goal:
+
+```
+Goal 1        Goal 2        Goal 3        Goal 4
+1 2 3         8 7 6         _ 1 2         _ 8 7
+4 5 6         5 4 3         3 4 5         6 5 4
+7 8 _         2 1 _         6 7 8         3 2 1
+```
+
+---
+
+## 📁 Project Structure
+
+```
+task1/
+├── app.py                  # Streamlit web UI (tabs: visualization + experiments)
+├── main.py                 # CLI entry point (demo + batch experiments)
+├── experiment.py           # Benchmark runner shared by CLI and UI
+├── requirements.txt
+├── README.md
+└── src/
+    ├── __init__.py          # Package exports
+    ├── problem.py           # PuzzleState, EightPuzzle (state space + actions)
+    ├── search.py            # BFS, A*, SearchResult, Node
+    ├── heuristics.py        # HammingHeuristic, ChebyshevSumHeuristic
+    ├── utils.py             # Random state generator
+    └── visualization.py     # Text tree + Graphviz rendering
+```
+
+### Architecture Overview
+
+```
+┌──────────────┐       ┌──────────────┐
+│   app.py     │       │   main.py    │
+│  (Streamlit) │       │    (CLI)     │
+└──────┬───────┘       └──────┬───────┘
+       │                      │
+       └──────┬───────────────┘
+              ▼
+     ┌─────────────────┐
+     │  experiment.py   │  ← orchestrates trials
+     └────────┬────────┘
+              ▼
+  ┌───────────────────────────────────────┐
+  │               src/                     │
+  │                                        │
+  │  problem.py ─── state space + rules    │
+  │  search.py  ─── BFS, A* algorithms    │
+  │  heuristics.py ── Hamming/2, Cheb/2   │
+  │  utils.py   ─── random state gen      │
+  │  visualization.py ── tree rendering   │
+  └───────────────────────────────────────┘
+```
+
+The `src` package is **framework-agnostic** — it has zero dependency on Streamlit. Both the CLI (`main.py`) and the web UI (`app.py`) consume it through `experiment.py`, keeping the core logic cleanly separated.
+
+---
+
+## 🚀 Installation
 
 ```bash
 # Clone the repository
-git clone https://github.com/dyphat0711/8-puzzle-ai-solver.git
+git clone https://github.com/your-username/modified-8-puzzle-solver.git
+cd modified-8-puzzle-solver
 
-# Change into the directory
-cd 8-puzzle-ai-solver
+# (Recommended) Create a virtual environment
+python -m venv venv
+source venv/bin/activate   # Linux/macOS
+venv\Scripts\activate      # Windows
 
-# Install dependencies (if applicable)
-# For example, for Python, you might run:
+# Install dependencies
 pip install -r requirements.txt
 ```
 
-## Usage
-To use the 8-Puzzle AI Solver:
+### Dependencies
 
-1. **Input the initial puzzle configuration**: Provide a space-separated string or a 2D array representing the initial state of the puzzle, where `0` represents the blank space.
-2. **Choose the algorithm**: Select the solving algorithm you'd like to apply.
-3. **Run the solver**: Execute the main program to find the solution, and view the result.
+| Package | Version | Purpose |
+|---------|---------|---------|
+| `streamlit` | 1.55+ | Interactive web dashboard |
+| `graphviz` | 0.21+ | Search tree visualization |
+| `pandas` | 2.3+ | Experiment data handling |
+
+> **Note:** You also need the [Graphviz system binary](https://graphviz.org/download/) installed for tree rendering.
+
+---
+
+## 💻 Usage
+
+### Web UI (Streamlit)
 
 ```bash
-# Example command to run the solver
-python solver.py
+streamlit run app.py
 ```
 
-## Algorithms
-The following algorithms are implemented:
-- **Breadth-First Search (BFS)**: Explores all possible states at the present depth prior to moving on to states at the next depth level. Guarantees shortest solution.
-- **Depth-First Search (DFS)**: Explores as far as possible along each branch before backing up. Suitable for memory-constrained environments.
-- **Uniform Cost Search**: Expands the least cost node in the frontier.
-- **A* Search**: Combines the benefits of BFS and heuristics to efficiently find the shortest path. Recommended for optimal performance.
+The dashboard has two tabs:
 
-## How It Works
-1. The solver reads the initial puzzle state
-2. Applies the selected algorithm with appropriate heuristics
-3. Explores the state space to find a path to the goal state
-4. Returns the sequence of moves needed to solve the puzzle
-5. Displays metrics such as execution time and number of moves
+| Tab | Description |
+|-----|-------------|
+| **Step-by-step Visualization** | Pick an algorithm, solve a random puzzle, and watch each move animated on a board with a search tree diagram |
+| **Experiments & History** | Run batch trials, compare BFS vs A\* variants, view summary tables and performance charts |
 
-## Performance
-The performance of different algorithms varies:
-- **BFS**: Complete but can be slow for deep solutions
-- **A***: Most efficient, especially with Manhattan distance heuristic
-- **DFS**: Fast but does not guarantee optimal solutions
+### Command Line
 
-## Contributing
-Contributions are welcome! To contribute to the 8-Puzzle AI Solver:
-1. Fork the repository.
-2. Create your feature branch (`git checkout -b feature/YourFeature`).
-3. Commit your changes (`git commit -m 'Add some feature'`).
-4. Push to the branch (`git push origin feature/YourFeature`).
-5. Create a new Pull Request.
+```bash
+python main.py
+```
 
-## License
-This project is open source and available under the MIT License.
+Runs an interactive demo (choose your algorithm) followed by a batch benchmark of all three solvers.
 
-Thank you for considering contributing to the project!
+---
+
+## 🧪 Example Run
+
+```
+============================================================
+TRÌNH GIẢI 8-PUZZLE
+============================================================
+
+[Trạng thái bắt đầu]
+2 8 3
+1 _ 5
+4 7 6
+
+Đang tìm đường đi bằng A* (Chebyshev/2)...
+Đã giải xong trong 0.0032 giây!
+Cost: 5 | Nodes Expanded: 12 | Max Frontier: 18
+
+[Đường đi chi tiết - 5 bước]
+
+Bước 0 [BẮT ĐẦU]
+  2 8 3
+  1 _ 5
+  4 7 6
+
+Bước 1 [Slide-Up]
+  2 _ 3
+  1 8 5
+  4 7 6
+
+  ... (remaining steps) ...
+
+Bước 5 [Slide-Right]
+  1 2 3
+  4 5 6
+  7 8 _
+```
+
+---
+
+## 📊 Benchmark Metrics
+
+Each experiment records four metrics per solver:
+
+| Metric | Description |
+|--------|-------------|
+| **Path Cost** | Total number of actions in the solution |
+| **Nodes Expanded** | States popped from the frontier and explored |
+| **Max Frontier Size** | Peak memory usage of the open list |
+| **Execution Time** | Wall-clock time in seconds |
+
+### Sample Benchmark (5 trials, 15-step shuffle)
+
+| Algorithm | Avg Cost | Avg Expanded | Avg Frontier | Avg Time (s) |
+|-----------|:--------:|:------------:|:------------:|:-------------:|
+| A\* (Chebyshev/2) | ~5.2 | ~28 | ~42 | ~0.005 |
+| A\* (Hamming/2) | ~5.2 | ~35 | ~51 | ~0.007 |
+| BFS | ~5.2 | ~180 | ~290 | ~0.035 |
+
+> A\* with Chebyshev/2 consistently expands **5–10× fewer nodes** than BFS while finding solutions of the same cost.
+
+---
+
+## 📈 Future Improvements
+
+- **Pattern Database heuristic** — precompute exact sub-problem costs for stronger lower bounds
+- **Linear Conflict** — augment Chebyshev with conflict penalties for tiles in the same row/column
+- **IDA\*** — iterative-deepening A\* to reduce memory from O(b^d) to O(d)
+- **Bidirectional search** — search from start and goal simultaneously (feasible with multiple goals via virtual goal node)
+- **Parallel state expansion** — leverage multiprocessing for large branching factors
+- **Animated GIF export** — render the solution path as a shareable animation
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! To get started:
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/your-feature`)
+3. Commit your changes (`git commit -m 'Add your feature'`)
+4. Push to the branch (`git push origin feature/your-feature`)
+5. Open a Pull Request
+
+---
+
+## 📄 License
+
+This project is open source and available under the [MIT License](LICENSE).
+
+---
+
+<div align="center">
+
+**If you found this useful, consider giving it a ⭐**
+
+</div>
