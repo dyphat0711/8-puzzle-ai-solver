@@ -155,6 +155,187 @@ task1/
 
 The `src` package is **framework-agnostic** — it has zero dependency on Streamlit. Both the CLI (`main.py`) and the web UI (`app.py`) consume it through `experiment.py`, keeping the core logic cleanly separated.
 
+### Class Diagrams
+
+#### Problem Domain (`problem.py`)
+
+```mermaid
+classDiagram
+    class PuzzleState {
+        +tuple board
+        +int blank
+        +__init__(board)
+        +__hash__() int
+        +__eq__(other) bool
+        +__repr__() str
+        +swap(i, j) PuzzleState
+    }
+
+    class EightPuzzle {
+        +tuple GOALS$
+        +frozenset GOAL_SET$
+        -PuzzleState _initial
+        +__init__(initial)
+        +get_start_state() PuzzleState
+        +is_goal_state(state) bool
+        +get_successors(state) list
+        -_basic(out, state, b, blank, br, bc)$
+        -_knight(out, state, b, blank, br, bc)$
+        -_div_swap(out, state, b)$
+        -_jump(out, b, blank, br, bc)$
+    }
+
+    EightPuzzle --> PuzzleState : initial state
+    EightPuzzle ..> PuzzleState : produces successors
+```
+
+#### Search Engine (`search.py`)
+
+```mermaid
+classDiagram
+    class SearchResult {
+        +list path
+        +list actions
+        +int cost
+        +int nodes_expanded
+        +int max_frontier_size
+    }
+
+    class Node {
+        +PuzzleState state
+        +Node parent
+        +str action
+        +int g
+        +int h
+        +int f
+        +__lt__(other) bool
+        +path() list~Node~
+    }
+
+    class SearchAlgorithm {
+        <<abstract>>
+        +list expanded_nodes
+        +int nodes_expanded
+        +int max_frontier_size
+        +search(problem)* SearchResult
+        #_build_result(goal_node) SearchResult
+    }
+
+    class BreadthFirstSearch {
+        +search(problem) SearchResult
+    }
+
+    class AStarSearch {
+        +Heuristic heuristic
+        +__init__(heuristic)
+        +search(problem) SearchResult
+    }
+
+    SearchAlgorithm <|-- BreadthFirstSearch
+    SearchAlgorithm <|-- AStarSearch
+    AStarSearch --> Heuristic : uses
+    SearchAlgorithm ..> SearchResult : returns
+    SearchAlgorithm ..> Node : expands
+    Node --> PuzzleState : wraps
+    Node --> Node : parent
+```
+
+#### Heuristics (`heuristics.py`)
+
+```mermaid
+classDiagram
+    class Heuristic {
+        <<abstract>>
+        +__call__(state)* int
+        +name* str
+    }
+
+    class HammingHeuristic {
+        +name str
+        +__call__(state) int
+    }
+
+    class ChebyshevSumHeuristic {
+        +name str
+        +__call__(state) int
+    }
+
+    Heuristic <|-- HammingHeuristic
+    Heuristic <|-- ChebyshevSumHeuristic
+```
+
+#### Full System Overview
+
+```mermaid
+classDiagram
+    direction LR
+
+    class PuzzleState {
+        +tuple board
+        +int blank
+        +swap(i, j) PuzzleState
+    }
+
+    class EightPuzzle {
+        +tuple GOALS$
+        -PuzzleState _initial
+        +get_start_state() PuzzleState
+        +is_goal_state(state) bool
+        +get_successors(state) list
+    }
+
+    class Node {
+        +PuzzleState state
+        +Node parent
+        +int g
+        +int h
+        +int f
+    }
+
+    class SearchResult {
+        +list path
+        +list actions
+        +int cost
+    }
+
+    class SearchAlgorithm {
+        <<abstract>>
+        +search(problem)* SearchResult
+    }
+
+    class BreadthFirstSearch {
+        +search(problem) SearchResult
+    }
+
+    class AStarSearch {
+        +Heuristic heuristic
+        +search(problem) SearchResult
+    }
+
+    class Heuristic {
+        <<abstract>>
+        +__call__(state)* int
+    }
+
+    class HammingHeuristic {
+        +__call__(state) int
+    }
+
+    class ChebyshevSumHeuristic {
+        +__call__(state) int
+    }
+
+    EightPuzzle --> PuzzleState
+    SearchAlgorithm <|-- BreadthFirstSearch
+    SearchAlgorithm <|-- AStarSearch
+    Heuristic <|-- HammingHeuristic
+    Heuristic <|-- ChebyshevSumHeuristic
+    AStarSearch --> Heuristic
+    SearchAlgorithm ..> EightPuzzle : solves
+    SearchAlgorithm ..> SearchResult : returns
+    Node --> PuzzleState : wraps
+```
+
 ---
 
 ## 🚀 Installation
