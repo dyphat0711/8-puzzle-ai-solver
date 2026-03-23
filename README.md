@@ -1,18 +1,14 @@
 <div align="center">
 
-# 🧩 Modified 8-Puzzle AI Solver
+# 🧩 8-Puzzle AI Solver
 
 **A high-performance AI agent that solves a non-standard 8-puzzle with knight moves, divisibility swaps, jump-overs, and multiple goal states.**
 
 [![Python 3.8+](https://img.shields.io/badge/Python-3.8%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.55-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Made with AI](https://img.shields.io/badge/Made%20with-AI%20Search-blueviolet)]()
 
 <br>
-
-<!-- Replace with your actual demo GIF -->
-> 🎬 **[Demo GIF Placeholder]** — _Record with [ScreenToGif](https://www.screentogif.com/) or [Peek](https://github.com/phw/peek) and drop it here._
 
 </div>
 
@@ -22,13 +18,13 @@
 
 The classic 8-puzzle is a well-studied toy problem in AI. This variant turns it into a **genuinely harder** search challenge by adding four distinct move types:
 
-| Move | Classic 8-Puzzle | This Variant |
-|------|:---:|:---:|
-| Basic Slide | ✅ | ✅ |
-| Knight Jump | ❌ | ✅ |
-| Divisibility Swap | ❌ | ✅ |
-| Jump-Over | ❌ | ✅ |
-| Multiple Goals | ❌ | ✅ (4 goals) |
+| Move              | Classic 8-Puzzle | This Variant |
+| ----------------- | :--------------: | :----------: |
+| Basic Slide       |        ✅        |      ✅      |
+| Knight Jump       |        ❌        |      ✅      |
+| Divisibility Swap |        ❌        |      ✅      |
+| Jump-Over         |        ❌        |      ✅      |
+| Multiple Goals    |        ❌        | ✅ (4 goals) |
 
 These rules **dramatically increase the branching factor**, making uninformed search far more expensive while rewarding well-designed heuristics. The project also ships with an interactive Streamlit dashboard for real-time visualization and benchmarking — not just a script, but a tool you can explore with.
 
@@ -62,10 +58,10 @@ Uses a priority queue ordered by `f(n) = g(n) + h(n)` where `g(n)` is the path c
 
 Both heuristics compute their raw value across **all 4 goal states** and take the **minimum**, then **divide by 2** (ceiling).
 
-| Heuristic | Raw Metric | Formula |
-|-----------|-----------|---------|
-| **Hamming / 2** | # of misplaced tiles | `⌈ min_goal(misplaced) / 2 ⌉` |
-| **Chebyshev / 2** | Σ Chebyshev distances | `⌈ min_goal(Σ cheb) / 2 ⌉` |
+| Heuristic         | Raw Metric            | Formula                       |
+| ----------------- | --------------------- | ----------------------------- |
+| **Hamming / 2**   | # of misplaced tiles  | `⌈ min_goal(misplaced) / 2 ⌉` |
+| **Chebyshev / 2** | Σ Chebyshev distances | `⌈ min_goal(Σ cheb) / 2 ⌉`    |
 
 ### Why divide by 2?
 
@@ -84,15 +80,19 @@ Because no single action can reduce the raw metric by more than 2, the halved va
 ## 🧩 Move Rules in Detail
 
 ### 1. Basic Slide
+
 Standard 4-directional slide of a tile adjacent to the blank (Up / Down / Left / Right).
 
 ### 2. Knight Move
+
 A tile at an L-shaped chess-knight offset from the blank jumps directly into the blank position.
 
 ### 3. Divisibility Swap
+
 Two **adjacent, non-blank** tiles `A` and `B` swap positions if `A % B == 0` or `B % A == 0`. The blank is not involved.
 
 ### 4. Jump-Over
+
 When three cells form a line as `A - B - Blank`, tile A leaps over B into the blank. B stays in place.
 
 ---
@@ -139,13 +139,13 @@ task1/
        └──────┬───────────────┘
               ▼
      ┌─────────────────┐
-     │  experiment.py   │  ← orchestrates trials
+     │  experiment.py  │  ← orchestrates trials
      └────────┬────────┘
               ▼
   ┌───────────────────────────────────────┐
-  │               src/                     │
-  │                                        │
-  │  problem.py ─── state space + rules    │
+  │               src/                    │
+  │                                       │
+  │  problem.py ─── state space + rules   │
   │  search.py  ─── BFS, A* algorithms    │
   │  heuristics.py ── Hamming/2, Cheb/2   │
   │  utils.py   ─── random state gen      │
@@ -161,8 +161,8 @@ The `src` package is **framework-agnostic** — it has zero dependency on Stream
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/modified-8-puzzle-solver.git
-cd modified-8-puzzle-solver
+git clone https://github.com/dyphat0711/8-puzzle-ai-solver.git
+cd 8-puzzle-ai-solver
 
 # (Recommended) Create a virtual environment
 python -m venv venv
@@ -175,11 +175,11 @@ pip install -r requirements.txt
 
 ### Dependencies
 
-| Package | Version | Purpose |
-|---------|---------|---------|
-| `streamlit` | 1.55+ | Interactive web dashboard |
-| `graphviz` | 0.21+ | Search tree visualization |
-| `pandas` | 2.3+ | Experiment data handling |
+| Package     | Version | Purpose                   |
+| ----------- | ------- | ------------------------- |
+| `streamlit` | 1.55+   | Interactive web dashboard |
+| `graphviz`  | 0.21+   | Search tree visualization |
+| `pandas`    | 2.3+    | Experiment data handling  |
 
 > **Note:** You also need the [Graphviz system binary](https://graphviz.org/download/) installed for tree rendering.
 
@@ -195,10 +195,10 @@ streamlit run app.py
 
 The dashboard has two tabs:
 
-| Tab | Description |
-|-----|-------------|
+| Tab                            | Description                                                                                                  |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------ |
 | **Step-by-step Visualization** | Pick an algorithm, solve a random puzzle, and watch each move animated on a board with a search tree diagram |
-| **Experiments & History** | Run batch trials, compare BFS vs A\* variants, view summary tables and performance charts |
+| **Experiments & History**      | Run batch trials, compare BFS vs A\* variants, view summary tables and performance charts                    |
 
 ### Command Line
 
@@ -252,20 +252,20 @@ Bước 5 [Slide-Right]
 
 Each experiment records four metrics per solver:
 
-| Metric | Description |
-|--------|-------------|
-| **Path Cost** | Total number of actions in the solution |
-| **Nodes Expanded** | States popped from the frontier and explored |
-| **Max Frontier Size** | Peak memory usage of the open list |
-| **Execution Time** | Wall-clock time in seconds |
+| Metric                | Description                                  |
+| --------------------- | -------------------------------------------- |
+| **Path Cost**         | Total number of actions in the solution      |
+| **Nodes Expanded**    | States popped from the frontier and explored |
+| **Max Frontier Size** | Peak memory usage of the open list           |
+| **Execution Time**    | Wall-clock time in seconds                   |
 
 ### Sample Benchmark (5 trials, 15-step shuffle)
 
-| Algorithm | Avg Cost | Avg Expanded | Avg Frontier | Avg Time (s) |
-|-----------|:--------:|:------------:|:------------:|:-------------:|
-| A\* (Chebyshev/2) | ~5.2 | ~28 | ~42 | ~0.005 |
-| A\* (Hamming/2) | ~5.2 | ~35 | ~51 | ~0.007 |
-| BFS | ~5.2 | ~180 | ~290 | ~0.035 |
+| Algorithm         | Avg Cost | Avg Expanded | Avg Frontier | Avg Time (s) |
+| ----------------- | :------: | :----------: | :----------: | :----------: |
+| A\* (Chebyshev/2) |   ~5.2   |     ~28      |     ~42      |    ~0.005    |
+| A\* (Hamming/2)   |   ~5.2   |     ~35      |     ~51      |    ~0.007    |
+| BFS               |   ~5.2   |     ~180     |     ~290     |    ~0.035    |
 
 > A\* with Chebyshev/2 consistently expands **5–10× fewer nodes** than BFS while finding solutions of the same cost.
 
