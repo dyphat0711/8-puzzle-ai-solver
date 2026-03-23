@@ -5,11 +5,16 @@ import pandas as pd
 from datetime import datetime
 
 # Import logic từ file modules 
-from src.problem import EightPuzzle
-from src.utils import generate_random_state
-from src.search import BreadthFirstSearch, AStarSearch
-from src.heuristics import HammingHeuristic, ChebyshevSumHeuristic
-from src.visualization import render_tree_graphviz
+from src import (
+    EightPuzzle,
+    generate_random_state,
+    BreadthFirstSearch,
+    AStarSearch,
+    HammingHeuristic,
+    ChebyshevSumHeuristic,
+    render_tree_graphviz
+)
+
 from experiment import run_comparison_experiments
 
 st.set_page_config(page_title="8-Puzzle Solver", page_icon="🧩", layout="wide")
