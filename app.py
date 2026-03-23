@@ -18,7 +18,7 @@ from src import (
 from experiment import run_comparison_experiments
 
 st.set_page_config(page_title="8-Puzzle Solver", page_icon="🧩", layout="wide")
-st.title("🧩 8-Puzzle")
+st.title("8-Puzzle")
 
 def draw_board(state):
     b = state.board
@@ -36,7 +36,7 @@ def draw_board(state):
     html += "</table><br>"
     return html
 
-tab1, tab2 = st.tabs(["👁️ Minh hoạ từng bước", "🧪 Thực nghiệm & Lịch sử"])
+tab1, tab2 = st.tabs(["Minh hoạ từng bước", "Thực nghiệm & Lịch sử"])
 
 # ==========================================
 # TAB 1: MINH HOẠ TỪNG BƯỚC ĐI CỦA 1 BÀI TOÁN
@@ -52,14 +52,14 @@ with tab1:
         st.markdown("**1. Trạng thái ban đầu**")
         st.write(draw_board(st.session_state.single_state), unsafe_allow_html=True)
         diff = st.slider("Độ khó (Bước xáo trộn):", 5, 30, 15, key="single_diff")
-        if st.button("🎲 Tạo bài toán mới", use_container_width=True):
+        if st.button("Tạo bài toán mới", use_container_width=True):
             st.session_state.single_state = generate_random_state(steps=diff)
             st.rerun()
             
         st.divider()
         st.markdown("**2. Chọn thuật toán**")
         algo_choice = st.selectbox("Thuật toán:", ["A* (Chebyshev/2)", "A* (Hamming/2)", "BFS"])
-        solve_btn = st.button("🚀 Giải và Xem các bước", type="primary", use_container_width=True)
+        solve_btn = st.button("Giải và Xem các bước", type="primary", use_container_width=True)
 
     with col_visual:
         if solve_btn:
@@ -77,10 +77,10 @@ with tab1:
                 elapsed = time.perf_counter() - t0
                 
             if result:
-                st.success(f"🎉 Đã tìm thấy lời giải ({result.cost} bước) trong {elapsed:.4f} giây!")
-                st.markdown("### 🗺️ Chi tiết các bước di chuyển")
+                st.success(f"Đã tìm thấy lời giải ({result.cost} bước) trong {elapsed:.4f} giây!")
+                st.markdown("### Chi tiết các bước di chuyển")
                 
-                st.markdown("### 🌳 Sơ đồ cây tìm kiếm (Top 15 Node mở rộng)")
+                st.markdown("### Sơ đồ cây tìm kiếm (15 Node mở rộng)")
                 dot_graph = render_tree_graphviz(solver.expanded_nodes, n=15, return_dot=True)
                 if dot_graph:
                     st.graphviz_chart(dot_graph)
@@ -110,11 +110,11 @@ with tab2:
         st.session_state.history_df = pd.DataFrame()
 
     with st.sidebar:
-        st.header("⚙️ Cài đặt thực nghiệm (Tab 2)")
+        st.header("Cài đặt thực nghiệm")
         num_trials = st.slider("Số bài toán mỗi đợt:", 1, 20, 5)
         shuffle_steps = st.slider("Độ khó (Bước xáo trộn):", 5, 25, 15)
-        run_exp_btn = st.button("🚀 Chạy đợt thực nghiệm mới", type="primary", use_container_width=True)
-        if st.button("🗑️ Xóa lịch sử", use_container_width=True):
+        run_exp_btn = st.button("Chạy đợt thực nghiệm mới", type="primary", use_container_width=True)
+        if st.button("Xóa lịch sử", use_container_width=True):
             st.session_state.history_df = pd.DataFrame()
             st.rerun()
 
@@ -128,14 +128,13 @@ with tab2:
             status_text.text(f"Đang xử lý bài toán {current_trial} / {total_trials}...")
             progress_bar.progress(current_trial / total_trials)
             
-        # Gọi hàm chung từ experiment.py thay vì tự viết vòng lặp
         results_list = run_comparison_experiments(num_trials, shuffle_steps, update_ui)
         
         # Thêm cột "Đợt chạy" vào kết quả trả về
         for r in results_list:
             r["Đợt chạy"] = run_time
             
-        status_text.success(f"✅ Đã hoàn thành đợt chạy lúc {run_time}!")
+        status_text.success(f"Đã hoàn thành đợt chạy lúc {run_time}!")
         
         new_df = pd.DataFrame(results_list)
         if st.session_state.history_df.empty:
@@ -145,17 +144,17 @@ with tab2:
 
     if not st.session_state.history_df.empty:
         df = st.session_state.history_df
-        st.subheader("📋 Lịch sử chi tiết")
+        st.subheader("Lịch sử chi tiết")
         st.dataframe(df, use_container_width=True, hide_index=True)
         
-        st.subheader("📊 Bảng Tổng kết (Trung bình)")
+        st.subheader("Bảng Tổng kết (Trung bình)")
         summary_df = df.groupby("Thuật toán").agg({
             "Cost": "mean", "Nodes Expanded": "mean",
             "Max Frontier": "mean", "Thời gian (s)": "mean"
         }).reset_index()
         st.table(summary_df)
         
-        st.subheader("📈 Biểu đồ hiệu năng")
+        st.subheader("Biểu đồ hiệu năng")
         chart_df = summary_df.set_index("Thuật toán")
         c1, c2, c3 = st.columns(3)
         with c1: st.bar_chart(chart_df["Thời gian (s)"], color="#FF5722") 
