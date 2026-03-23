@@ -7,7 +7,6 @@ from src import (
     AStarSearch,
     HammingHeuristic,
     ChebyshevSumHeuristic,
-    visualize_tree
 )
     
 def run_demo():
@@ -52,10 +51,6 @@ def run_demo():
             for line in str(state).split("\n"):
                 print(f"  {line}")
 
-        print("\n" + "=" * 60)
-        print("CÂY TÌM KIẾM (15 Node đầu tiên)")
-        print("=" * 60)
-        visualize_tree(solver.expanded_nodes, n=15)
     else:
         print("\nKhông tìm thấy đường đi.")
 

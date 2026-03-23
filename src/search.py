@@ -48,7 +48,7 @@ class SearchAlgorithm:
     def search(self, problem):
         raise NotImplementedError
 
-    def _build_result(self, goal_node):
+    def build_result(self, goal_node):
         p = goal_node.path()
         return SearchResult(
             path=[n.state for n in p],
@@ -70,7 +70,7 @@ class BreadthFirstSearch(SearchAlgorithm):
         start = problem.get_start_state()
         root = Node(start)
         if problem.is_goal_state(start):
-            return self._build_result(root)
+            return self.build_result(root)
 
         frontier = deque([root])
         explored = {start}
@@ -87,7 +87,7 @@ class BreadthFirstSearch(SearchAlgorithm):
                 child = Node(succ, node, action, node.g + cost)
                 if problem.is_goal_state(succ):
                     self.expanded_nodes.append(child)
-                    return self._build_result(child)
+                    return self.build_result(child)
                 frontier.append(child)
                 explored.add(succ)
 
@@ -112,8 +112,6 @@ class AStarSearch(SearchAlgorithm):
         start = problem.get_start_state()
         h0 = self.heuristic(start)
         root = Node(start, g=0, h=h0)
-        if problem.is_goal_state(start):
-            return self._build_result(root)
 
         counter = 0  # tie-breaker for heapq stability
         frontier = [(root.f, counter, root)]
@@ -130,7 +128,7 @@ class AStarSearch(SearchAlgorithm):
             self.expanded_nodes.append(node)
 
             if problem.is_goal_state(node.state):
-                return self._build_result(node)
+                return self.build_result(node)
 
             explored.add(node.state)
             self.nodes_expanded += 1

@@ -39,17 +39,17 @@ class PuzzleState:
 
 # ── Grid helpers ─────────────────────────────────────────────────────────────
 
-_BASIC_DIRS = (
+BASIC = (
     (-1, 0, "Up"), (1, 0, "Down"), (0, -1, "Left"), (0, 1, "Right"),
 )
 
-_KNIGHT_OFFSETS = (
+KNIGHT = (
     (-2, -1), (-2, 1), (-1, -2), (-1, 2),
     (1, -2),  (1, 2),  (2, -1),  (2, 1),
 )
 
 # (delta_A_row, delta_A_col, delta_B_row, delta_B_col) relative to blank
-_JUMP_PATTERNS = (
+JUMPS = (
     (-2, 0, -1, 0),   # A two rows above, B one row above
     (2,  0,  1, 0),   # A two rows below, B one row below
     (0, -2,  0, -1),  # A two cols left,  B one col left
@@ -57,15 +57,15 @@ _JUMP_PATTERNS = (
 )
 
 
-def _rc(idx):
+def rc(idx):
     return divmod(idx, 3)
 
 
-def _idx(r, c):
+def idx(r, c):
     return r * 3 + c
 
 
-def _ok(r, c):
+def ok(r, c):
     return 0 <= r < 3 and 0 <= c < 3
 
 
@@ -103,45 +103,45 @@ class EightPuzzle:
         out = []
         b = state.board
         blank = state.blank
-        br, bc = _rc(blank)
-        self._basic(out, state, b, blank, br, bc)
-        self._knight(out, state, b, blank, br, bc)
-        self._div_swap(out, state, b)
-        self._jump(out, b, blank, br, bc)
+        br, bc = rc(blank)
+        self.basic(out, state, b, blank, br, bc)
+        self.knight(out, state, b, blank, br, bc)
+        self.div_swap(out, state, b)
+        self.jump(out, b, blank, br, bc)
         return out
 
     # ── action generators (static to keep state immutable) ───────────────
 
     @staticmethod
-    def _basic(out, state, b, blank, br, bc):
+    def basic(out, state, b, blank, br, bc):
         """1. Slide an adjacent tile into the blank."""
-        for dr, dc, name in _BASIC_DIRS:
+        for dr, dc, name in BASIC:
             nr, nc = br + dr, bc + dc
-            if _ok(nr, nc):
-                out.append((state.swap(blank, _idx(nr, nc)), f"Slide-{name}", 1))
+            if ok(nr, nc):
+                out.append((state.swap(blank, idx(nr, nc)), f"Slide-{name}", 1))
 
     @staticmethod
-    def _knight(out, state, b, blank, br, bc):
+    def knight(out, state, b, blank, br, bc):
         """2. Knight-shaped jump into the blank."""
-        for dr, dc in _KNIGHT_OFFSETS:
+        for dr, dc in KNIGHT:
             nr, nc = br + dr, bc + dc
-            if _ok(nr, nc):
-                ni = _idx(nr, nc)
+            if ok(nr, nc):
+                ni = idx(nr, nc)
                 out.append((state.swap(blank, ni), f"Knight({b[ni]})", 1))
 
     @staticmethod
-    def _div_swap(out, state, b):
+    def div_swap(out, state, b):
         """3. Swap two adjacent non-blank tiles when one value divides the other."""
         for i in range(9):
             if b[i] == 0:
                 continue
-            ri, ci = _rc(i)
+            ri, ci = rc(i)
             # Only check right and down neighbours to avoid duplicate pairs
             for dr, dc in ((0, 1), (1, 0)):
                 nr, nc = ri + dr, ci + dc
-                if not _ok(nr, nc):
+                if not ok(nr, nc):
                     continue
-                j = _idx(nr, nc)
+                j = idx(nr, nc)
                 if b[j] == 0:
                     continue
                 a, bv = b[i], b[j]
@@ -149,14 +149,14 @@ class EightPuzzle:
                     out.append((state.swap(i, j), f"DivSwap({a},{bv})", 1))
 
     @staticmethod
-    def _jump(out, b, blank, br, bc):
+    def jump(out, b, blank, br, bc):
         """4. Tile A jumps over tile B into the blank (A-B-Blank consecutive)."""
-        for da_r, da_c, dm_r, dm_c in _JUMP_PATTERNS:
+        for da_r, da_c, dm_r, dm_c in JUMPS:
             ar, ac = br + da_r, bc + da_c
             mr, mc = br + dm_r, bc + dm_c
-            if _ok(ar, ac) and _ok(mr, mc):
-                ai = _idx(ar, ac)
-                mi = _idx(mr, mc)
+            if ok(ar, ac) and ok(mr, mc):
+                ai = idx(ar, ac)
+                mi = idx(mr, mc)
                 if b[ai] != 0 and b[mi] != 0:
                     lst = list(b)
                     lst[blank] = b[ai]

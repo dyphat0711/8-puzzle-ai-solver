@@ -5,8 +5,6 @@ from src import EightPuzzle
 # ── Abstract heuristic ───────────────────────────────────────────────────────
 
 class Heuristic:
-    """Callable interface so any heuristic can be passed to A* directly."""
-
     def __call__(self, state):
         raise NotImplementedError
 
@@ -17,13 +15,13 @@ class Heuristic:
 
 # ── Pre-computed goal-tile positions ─────────────────────────────────────────
 
-_GOAL_POSITIONS = []
+GOAL_POSITIONS = []
 for _g in EightPuzzle.GOALS:
     _pos = {}
     for _i, _v in enumerate(_g):
         if _v != 0:
             _pos[_v] = divmod(_i, 3)
-    _GOAL_POSITIONS.append(_pos)
+    GOAL_POSITIONS.append(_pos)
 
 
 # ── Heuristic 1: Hamming (Misplaced Tiles / 2) ───────────────────────
@@ -56,7 +54,7 @@ class ChebyshevSumHeuristic(Heuristic):
     def __call__(self, state):
         board = state.board
         best = math.inf
-        for gpos in _GOAL_POSITIONS:
+        for gpos in GOAL_POSITIONS:
             total = 0
             for i in range(9):
                 val = board[i]
