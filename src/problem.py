@@ -136,8 +136,7 @@ class EightPuzzle:
             if b[i] == 0:
                 continue
             ri, ci = rc(i)
-            # Only check right and down neighbours to avoid duplicate pairs
-            for dr, dc in ((0, 1), (1, 0)):
+            for dr, dc in ((0, 1), (1, 0), (0, -1), (-1, 0)):
                 nr, nc = ri + dr, ci + dc
                 if not ok(nr, nc):
                     continue
